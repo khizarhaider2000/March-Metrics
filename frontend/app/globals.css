@@ -1,0 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-surface text-slate-100 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+@layer utilities {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      theme("colors.slate.800") 25%,
+      theme("colors.slate.700") 50%,
+      theme("colors.slate.800") 75%
+    );
+    background-size: 800px 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* Subtle card hover ring */
+  .card-hover {
+    @apply transition-all duration-200
+           hover:border-slate-600 hover:shadow-lg hover:shadow-black/20;
+  }
+
+  /* Vertical gradient divider */
+  .gradient-divider {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      theme("colors.slate.700"),
+      transparent
+    );
+  }
+}
