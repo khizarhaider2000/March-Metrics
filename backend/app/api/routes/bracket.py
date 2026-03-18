@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
+
+from app.limiter import limiter
 
 from app.api.dependencies import fetch_teams_for_season, orm_team_to_input
 from app.api.schemas import (
@@ -76,6 +78,7 @@ def _bracket_result_to_response(result: BracketResult) -> BracketResponse:
 # Route
 # ---------------------------------------------------------------------------
 
+@limiter.limit("10/minute")
 @router.get(
     "/bracket",
     response_model=BracketResponse,
@@ -92,6 +95,7 @@ def _bracket_result_to_response(result: BracketResult) -> BracketResponse:
     ),
 )
 def get_bracket(
+    request: Request,
     season:  int = Query(..., description="Tournament season year, e.g. 2026"),
     profile: str = Query("balanced", description="Weight profile name"),
     db: Session = Depends(get_db),

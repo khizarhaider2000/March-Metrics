@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
+
+from app.limiter import limiter
 
 from app.api.dependencies import fetch_teams_for_season, orm_team_to_input
 from app.api.schemas import RankedTeamOut, RankingsResponse
@@ -9,6 +11,7 @@ from app.services.scoring import compute_march_scores
 router = APIRouter()
 
 
+@limiter.limit("30/minute")
 @router.get(
     "/rankings",
     response_model=RankingsResponse,
@@ -21,6 +24,7 @@ router = APIRouter()
     ),
 )
 def get_rankings(
+    request: Request,
     season:  int = Query(..., description="Tournament season year, e.g. 2026"),
     profile: str = Query("balanced", description="Weight profile name"),
     db: Session = Depends(get_db),

@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
+
+from app.limiter import limiter
 
 from app.api.dependencies import fetch_team_by_id, orm_team_to_input
 from app.api.schemas import CategoryEdgeOut, MatchupResponse, MatchupTeamOut
@@ -9,6 +11,7 @@ from app.services.matchup import analyze_matchup
 router = APIRouter()
 
 
+@limiter.limit("30/minute")
 @router.get(
     "/matchup",
     response_model=MatchupResponse,
@@ -21,6 +24,7 @@ router = APIRouter()
     ),
 )
 def get_matchup(
+    request: Request,
     team_a_id: int = Query(..., description="Primary key of the first team"),
     team_b_id: int = Query(..., description="Primary key of the second team"),
     profile:   str = Query("balanced", description="Weight profile name"),
