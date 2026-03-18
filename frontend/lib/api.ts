@@ -1,14 +1,31 @@
 // ─── API client ───────────────────────────────────────────────────────────────
 // All requests go through the Next.js proxy: /api/* → http://localhost:8000/api/*
 
+const RETRY_DELAYS = [3000, 6000]; // retry twice on network errors only
+
 async function get<T>(path: string, params?: Record<string, string>): Promise<T> {
   const search = params ? "?" + new URLSearchParams(params).toString() : "";
-  const res = await fetch(`/api${path}${search}`, { cache: "no-store" });
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new Error(`API ${res.status}: ${text}`);
+  const url = `/api${path}${search}`;
+
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) {
+        // Don't retry HTTP errors — these are application-level, not cold starts
+        const text = await res.text().catch(() => res.statusText);
+        throw new Error(`API ${res.status}: ${text}`);
+      }
+      return res.json() as Promise<T>;
+    } catch (err) {
+      lastError = err;
+      // Only retry on network/fetch errors (TypeError), not HTTP errors
+      const isNetworkError = err instanceof TypeError;
+      if (!isNetworkError || attempt === RETRY_DELAYS.length) throw err;
+      await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
+    }
   }
-  return res.json() as Promise<T>;
+  throw lastError;
 }
 
 // ─── Shared types ─────────────────────────────────────────────────────────────

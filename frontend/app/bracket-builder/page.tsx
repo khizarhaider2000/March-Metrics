@@ -100,22 +100,24 @@ function toEditableBracket(bracket: BracketResponse): EditableBracket {
       games: round.games.map((game) => {
         // R64 (round 1) and First Four (round 0) have fixed seedings — keep teams
         const isEarlyRound = game.round_num <= 1;
+        // If either team is TBD (First Four not yet played), suppress all simulation data
+        const hasTBD = !game.team_a || !game.team_b;
         return {
           ...game,
           // Strip teams from later rounds — they earn their spot via picks
           team_a: isEarlyRound ? game.team_a : null,
           team_b: isEarlyRound ? game.team_b : null,
-          // Store API suggestion but clear the winner — user must pick
-          suggestedWinnerId: game.winner?.team_id ?? null,
+          // No suggestion for TBD games — First Four hasn't been played yet
+          suggestedWinnerId: hasTBD ? null : (game.winner?.team_id ?? null),
           winner: null,
           loser: null,
           winner_march_score: null,
           loser_march_score: null,
-          // Keep pre-computed matchup data for R64 (shown in node footer)
-          score_gap: isEarlyRound ? game.score_gap : null,
-          confidence: isEarlyRound ? game.confidence : null,
-          top_reasons: isEarlyRound ? game.top_reasons : [],
-          explanation: isEarlyRound ? game.explanation : "",
+          // Keep pre-computed matchup data only for R64 games with both teams known
+          score_gap: (isEarlyRound && !hasTBD) ? game.score_gap : null,
+          confidence: (isEarlyRound && !hasTBD) ? game.confidence : null,
+          top_reasons: (isEarlyRound && !hasTBD) ? game.top_reasons : [],
+          explanation: (isEarlyRound && !hasTBD) ? game.explanation : "",
         };
       }),
     })),

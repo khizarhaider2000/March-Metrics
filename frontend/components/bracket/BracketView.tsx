@@ -409,9 +409,9 @@ export function BracketView({ bracket, onGameClick }: BracketViewProps) {
         className="overflow-x-auto border-b border-surface-border"
         aria-label="Horizontal scroll for bracket view"
       >
-        <div style={{ width: `${contentWidth}px`, height: "1px" }} />
+        <div style={{ width: `${contentWidth}px`, height: "14px" }} />
       </div>
-      <div ref={bottomScrollRef} className="overflow-x-auto pb-4">
+      <div ref={bottomScrollRef} className="overflow-x-auto pb-4" style={{ scrollbarWidth: "none" }}>
         <div
           ref={contentRef}
           className="inline-flex items-start min-w-max"

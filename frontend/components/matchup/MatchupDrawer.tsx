@@ -172,7 +172,7 @@ function MetricsTable({
             <p className="text-2xs font-semibold text-slate-600 uppercase tracking-widest mb-1.5">
               {section}
             </p>
-            <div className="rounded-lg border border-surface-border overflow-hidden">
+            <div className="rounded-lg border border-surface-border">
               {defs.map((def, i) => {
                 const vA = teamADetail.metrics[def.key];
                 const vB = teamBDetail.metrics[def.key];
@@ -184,6 +184,8 @@ function MetricsTable({
                     className={cn(
                       "grid grid-cols-[1fr_80px_1fr] items-center px-3 py-1.5 text-xs",
                       i % 2 === 0 ? "bg-surface-card" : "bg-surface-overlay/30",
+                      i === 0 && "rounded-t-lg",
+                      i === defs.length - 1 && "rounded-b-lg",
                     )}
                   >
                     <span className={cn("font-mono text-right tabular-nums", better === "a" ? "text-blue-400 font-semibold" : "text-slate-400")}>
@@ -192,7 +194,7 @@ function MetricsTable({
                     </span>
                     <span className="text-2xs text-slate-600 text-center">
                       <Tooltip content={def.description} side="above">
-                        <span className="cursor-help border-b border-dotted border-slate-700/80">
+                        <span className="cursor-help border-b border-dotted border-slate-700/80 select-none">
                           {def.label}
                         </span>
                       </Tooltip>

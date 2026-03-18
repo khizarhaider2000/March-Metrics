@@ -638,9 +638,9 @@ function TeamRankingsContent() {
           className="overflow-x-auto border-b border-surface-border"
           aria-label="Horizontal scroll for team rankings table"
         >
-          <div style={{ width: `${tableScrollWidth}px`, height: "1px" }} />
+          <div style={{ width: `${tableScrollWidth}px`, height: "14px" }} />
         </div>
-        <div ref={bottomScrollRef} className="overflow-x-auto">
+        <div ref={bottomScrollRef} className="overflow-x-auto" style={{ scrollbarWidth: "none" }}>
           <table
             ref={tableRef}
             className="w-full border-collapse"
