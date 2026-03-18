@@ -114,6 +114,7 @@ export interface BracketGameOut {
   confidence: string | null;
   top_reasons: string[];
   explanation: string;
+  category_edges: Record<string, unknown>[];
 }
 
 export interface BracketRoundOut {

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface TooltipProps {
   children:  ReactNode;
-  content:   string;
+  content:   ReactNode;
   className?: string;
   /** Default: below trigger. Pass "above" for headers near bottom of viewport. */
   side?: "above" | "below";
@@ -16,8 +16,8 @@ export function Tooltip({ children, content, className, side = "below" }: Toolti
     <span className={cn("relative group/tip inline-flex items-center", className)}>
       {children}
 
-      {/* Tooltip panel */}
-      <span
+      {/* Tooltip panel — only rendered when there is content */}
+      {content != null && <span
         className={cn(
           // positioning
           "absolute left-1/2 -translate-x-1/2 z-50",
@@ -42,7 +42,7 @@ export function Tooltip({ children, content, className, side = "below" }: Toolti
           )}
         />
         {content}
-      </span>
+      </span>}
     </span>
   );
 }

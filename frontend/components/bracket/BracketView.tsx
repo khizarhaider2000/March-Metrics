@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { BracketResponse, BracketGameOut } from "@/lib/api";
 import { BracketMatchupNode } from "./BracketMatchupNode";
 
@@ -351,32 +351,93 @@ export interface BracketViewProps {
 }
 
 export function BracketView({ bracket, onGameClick }: BracketViewProps) {
+  const topScrollRef = useRef<HTMLDivElement | null>(null);
+  const bottomScrollRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const syncingScrollRef = useRef<"top" | "bottom" | null>(null);
+  const [contentWidth, setContentWidth] = useState(0);
+
+  useEffect(() => {
+    const contentEl = contentRef.current;
+    if (!contentEl) return;
+
+    const updateWidth = () => setContentWidth(contentEl.scrollWidth);
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(contentEl);
+
+    return () => observer.disconnect();
+  }, [bracket]);
+
+  useEffect(() => {
+    const topEl = topScrollRef.current;
+    const bottomEl = bottomScrollRef.current;
+    if (!topEl || !bottomEl) return;
+
+    const syncFromTop = () => {
+      if (syncingScrollRef.current === "bottom") return;
+      syncingScrollRef.current = "top";
+      bottomEl.scrollLeft = topEl.scrollLeft;
+      requestAnimationFrame(() => {
+        syncingScrollRef.current = null;
+      });
+    };
+
+    const syncFromBottom = () => {
+      if (syncingScrollRef.current === "top") return;
+      syncingScrollRef.current = "bottom";
+      topEl.scrollLeft = bottomEl.scrollLeft;
+      requestAnimationFrame(() => {
+        syncingScrollRef.current = null;
+      });
+    };
+
+    topEl.addEventListener("scroll", syncFromTop);
+    bottomEl.addEventListener("scroll", syncFromBottom);
+
+    return () => {
+      topEl.removeEventListener("scroll", syncFromTop);
+      bottomEl.removeEventListener("scroll", syncFromBottom);
+    };
+  }, []);
+
   return (
-    <div className="overflow-x-auto pb-4 rounded-xl">
+    <div className="rounded-xl">
       <div
-        className="inline-flex items-start min-w-max"
-        style={{ gap: COL_GAP }}
+        ref={topScrollRef}
+        className="overflow-x-auto border-b border-surface-border"
+        aria-label="Horizontal scroll for bracket view"
       >
-        {/* Left half: East (top) + West (bottom), rounds L→R */}
-        <HalfBracket
-          regions={LEFT_REGIONS}
-          bracket={bracket}
-          roundOrder={LEFT_ROUNDS}
-          connSide="right"
-          onGameClick={onGameClick}
-        />
+        <div style={{ width: `${contentWidth}px`, height: "1px" }} />
+      </div>
+      <div ref={bottomScrollRef} className="overflow-x-auto pb-4">
+        <div
+          ref={contentRef}
+          className="inline-flex items-start min-w-max"
+          style={{ gap: COL_GAP }}
+        >
+          {/* Left half: East (top) + West (bottom), rounds L→R */}
+          <HalfBracket
+            regions={LEFT_REGIONS}
+            bracket={bracket}
+            roundOrder={LEFT_ROUNDS}
+            connSide="right"
+            onGameClick={onGameClick}
+          />
 
-        {/* Center: Final Four + Championship */}
-        <CenterSection bracket={bracket} onGameClick={onGameClick} />
+          {/* Center: Final Four + Championship */}
+          <CenterSection bracket={bracket} onGameClick={onGameClick} />
 
-        {/* Right half: South (top) + Midwest (bottom), rounds R→L (E8 leftmost) */}
-        <HalfBracket
-          regions={RIGHT_REGIONS}
-          bracket={bracket}
-          roundOrder={RIGHT_ROUNDS}
-          connSide="left"
-          onGameClick={onGameClick}
-        />
+          {/* Right half: South (top) + Midwest (bottom), rounds R→L (E8 leftmost) */}
+          <HalfBracket
+            regions={RIGHT_REGIONS}
+            bracket={bracket}
+            roundOrder={RIGHT_ROUNDS}
+            connSide="left"
+            onGameClick={onGameClick}
+          />
+        </div>
       </div>
     </div>
   );

@@ -11,7 +11,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { api, TeamOut, MatchupResponse, MatchupTeamOut, CategoryEdgeOut } from "@/lib/api";
+import { api, TeamOut, MatchupResponse, MatchupTeamOut, CategoryEdgeOut, ProfileOut } from "@/lib/api";
+import { ProfileWeightBars } from "@/components/ui/profile-weight-bars";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -342,6 +343,13 @@ function MatchupAnalyzerContent() {
   const [teamsLoading, setTeamsLoading] = useState(true);
   const [running, setRunning]   = useState(false);
   const [error, setError]       = useState<string | null>(null);
+  const [profilesData, setProfilesData] = useState<ProfileOut[]>([]);
+
+  useEffect(() => {
+    api.profiles().then((r) => setProfilesData(r.profiles)).catch(() => {});
+  }, []);
+
+  const activeProfileWeights = profilesData.find((p) => p.name === profile)?.weights ?? {};
 
   useEffect(() => {
     api.teams(urlSeason)
@@ -486,6 +494,16 @@ function MatchupAnalyzerContent() {
           }
         </button>
       </div>
+
+      {/* ── Active profile weight breakdown ────────────────────────────────── */}
+      {Object.keys(activeProfileWeights).length > 0 && (
+        <div className="rounded-xl border border-surface-border bg-surface-card px-4 py-3">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2.5">
+            {PROFILES.find((p) => p.value === profile)?.label ?? profile} — stat weights
+          </p>
+          <ProfileWeightBars weights={activeProfileWeights} />
+        </div>
+      )}
 
       {/* ── Results ────────────────────────────────────────────────────────── */}
       {hasResult && scoredA && scoredB ? (

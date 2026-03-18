@@ -13,7 +13,9 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { api, RankedTeam } from "@/lib/api";
+import { api, RankedTeam, ProfileOut } from "@/lib/api";
+import { Tooltip } from "@/components/ui/tooltip";
+import { ProfileWeightBars } from "@/components/ui/profile-weight-bars";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -278,11 +280,20 @@ function UpsetFinderInner() {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
-  const [season,  setSeason]  = useState<number>(2026);
-  const [profile, setProfile] = useState<string>("balanced");
-  const [teams,   setTeams]   = useState<RankedTeam[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [season,       setSeason]       = useState<number>(2026);
+  const [profile,      setProfile]      = useState<string>("balanced");
+  const [teams,        setTeams]        = useState<RankedTeam[] | null>(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState<string | null>(null);
+  const [profilesData, setProfilesData] = useState<ProfileOut[]>([]);
+
+  useEffect(() => {
+    api.profiles().then((r) => setProfilesData(r.profiles)).catch(() => {});
+  }, []);
+
+  function getWeights(profileValue: string): Record<string, number> {
+    return profilesData.find((p) => p.name === profileValue)?.weights ?? {};
+  }
 
   // Read URL params on mount
   useEffect(() => {
@@ -380,22 +391,35 @@ function UpsetFinderInner() {
 
             {/* Profile pills */}
             <div className="flex items-center gap-1 rounded-lg border border-surface-border bg-surface-overlay p-0.5">
-              {PROFILES.map(({ value, label, icon: Icon, color }) => (
-                <button
-                  key={value}
-                  onClick={() => { setProfile(value); updateParam("profile", value); }}
-                  title={label}
-                  className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
-                    value === profile
-                      ? "bg-surface-card text-white shadow"
-                      : "text-slate-500 hover:text-slate-300"
-                  )}
-                >
-                  <Icon className={cn("w-3 h-3", value === profile ? color : "text-slate-500")} />
-                  <span className="hidden sm:block">{label}</span>
-                </button>
-              ))}
+              {PROFILES.map(({ value, label, icon: Icon, color }) => {
+                const weights = getWeights(value);
+                const hasWeights = Object.keys(weights).length > 0;
+                return (
+                  <Tooltip
+                    key={value}
+                    side="below"
+                    content={hasWeights ? (
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider">{label} weights</p>
+                        <ProfileWeightBars weights={weights} />
+                      </div>
+                    ) : null}
+                  >
+                    <button
+                      onClick={() => { setProfile(value); updateParam("profile", value); }}
+                      className={cn(
+                        "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                        value === profile
+                          ? "bg-surface-card text-white shadow"
+                          : "text-slate-500 hover:text-slate-300"
+                      )}
+                    >
+                      <Icon className={cn("w-3 h-3", value === profile ? color : "text-slate-500")} />
+                      <span className="hidden sm:block">{label}</span>
+                    </button>
+                  </Tooltip>
+                );
+              })}
             </div>
           </div>
         }

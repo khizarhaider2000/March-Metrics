@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import Link from "next/link";
 import {
   BarChart2, Swords, Trophy, ArrowRight,
@@ -11,6 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SectionCard } from "@/components/ui/section-card";
+import { Tooltip } from "@/components/ui/tooltip";
+import { ProfileWeightBars } from "@/components/ui/profile-weight-bars";
+import { api, ProfileOut } from "@/lib/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -115,6 +118,12 @@ function HomeContent() {
   const season  = Number(searchParams.get("season"))  || SEASONS[0];
   const profile = (searchParams.get("profile") as ProfileValue) || "balanced";
 
+  const [profilesData, setProfilesData] = useState<ProfileOut[]>([]);
+
+  useEffect(() => {
+    api.profiles().then((r) => setProfilesData(r.profiles)).catch(() => {});
+  }, []);
+
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
@@ -122,6 +131,10 @@ function HomeContent() {
   }
 
   const activeProfile = PROFILES.find((p) => p.value === profile) ?? PROFILES[0];
+
+  function getWeights(profileValue: string): Record<string, number> {
+    return profilesData.find((p) => p.name === profileValue)?.weights ?? {};
+  }
 
   // Build deep-link hrefs that carry the current season/profile
   function featureHref(base: string) {
@@ -199,19 +212,31 @@ function HomeContent() {
               {PROFILES.map((p) => {
                 const Icon = p.icon;
                 const active = p.value === profile;
+                const weights = getWeights(p.value);
+                const hasWeights = Object.keys(weights).length > 0;
                 return (
-                  <button
+                  <Tooltip
                     key={p.value}
-                    onClick={() => setParam("profile", p.value)}
-                    className={
-                      active
-                        ? `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${p.bg} ${p.color}`
-                        : "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 border border-surface-border hover:text-slate-300 hover:bg-surface-overlay transition-colors"
-                    }
+                    side="below"
+                    content={hasWeights ? (
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider">{p.label} weights</p>
+                        <ProfileWeightBars weights={weights} />
+                      </div>
+                    ) : null}
                   >
-                    <Icon className="w-3 h-3" />
-                    {p.label}
-                  </button>
+                    <button
+                      onClick={() => setParam("profile", p.value)}
+                      className={
+                        active
+                          ? `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${p.bg} ${p.color}`
+                          : "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 border border-surface-border hover:text-slate-300 hover:bg-surface-overlay transition-colors"
+                      }
+                    >
+                      <Icon className="w-3 h-3" />
+                      {p.label}
+                    </button>
+                  </Tooltip>
                 );
               })}
             </div>
@@ -261,11 +286,13 @@ function HomeContent() {
           {PROFILES.map((p) => {
             const Icon = p.icon;
             const active = p.value === profile;
+            const weights = getWeights(p.value);
+            const hasWeights = Object.keys(weights).length > 0;
             return (
               <button
                 key={p.value}
                 onClick={() => setParam("profile", p.value)}
-                className={`text-left rounded-xl border p-4 space-y-2 transition-colors ${
+                className={`text-left rounded-xl border p-4 space-y-2.5 transition-colors ${
                   active ? p.bg : "border-surface-border bg-surface-card hover:bg-surface-overlay"
                 }`}
               >
@@ -281,6 +308,11 @@ function HomeContent() {
                   )}
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed">{p.description}</p>
+                {hasWeights && (
+                  <div className="pt-1 border-t border-white/5">
+                    <ProfileWeightBars weights={weights} maxRows={6} />
+                  </div>
+                )}
               </button>
             );
           })}

@@ -15,6 +15,7 @@ import {
   CategoryEdgeOut,
 } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ type MetricKey = keyof NonNullable<TeamDetailOut["metrics"]>;
 interface MetricDef {
   key:          MetricKey;
   label:        string;
+  description:  string;
   section:      string;
   higherBetter: boolean | null; // null = neutral (tempo)
   format:       (v: number) => string;
@@ -61,22 +63,22 @@ interface MetricDef {
 
 const METRIC_DEFS: MetricDef[] = [
   // Overall
-  { key: "adj_em",      label: "Adj EM",     section: "Overall",   higherBetter: true,  format: (v) => v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1) },
-  { key: "sos",         label: "SOS",        section: "Overall",   higherBetter: true,  format: (v) => v.toFixed(2) },
+  { key: "adj_em",      label: "Adj EM",     description: "Adjusted efficiency margin: net points per 100 possessions against an average opponent. Higher is better.", section: "Overall",   higherBetter: true,  format: (v) => v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1) },
+  { key: "sos",         label: "SOS",        description: "Strength of schedule: quality of opponents faced. Higher means a tougher schedule.", section: "Overall",   higherBetter: true,  format: (v) => v.toFixed(2) },
   // Offense
-  { key: "adj_o",       label: "Adj O",      section: "Offense",   higherBetter: true,  format: (v) => v.toFixed(1) },
-  { key: "efg_pct",     label: "eFG%",       section: "Shooting",  higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
-  { key: "ft_rate",     label: "FT Rate",    section: "Shooting",  higherBetter: true,  format: (v) => v.toFixed(2) },
+  { key: "adj_o",       label: "Adj O",      description: "Adjusted offensive efficiency: points scored per 100 possessions after opponent adjustment. Higher is better.", section: "Offense",   higherBetter: true,  format: (v) => v.toFixed(1) },
+  { key: "efg_pct",     label: "eFG%",       description: "Effective field goal percentage: shooting percentage that gives extra weight to 3-pointers.", section: "Shooting",  higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
+  { key: "ft_rate",     label: "FT Rate",    description: "Free throw rate: free throw attempts relative to field goal attempts. Higher means more pressure on the rim.", section: "Shooting",  higherBetter: true,  format: (v) => v.toFixed(2) },
   // Defense
-  { key: "adj_d",       label: "Adj D",      section: "Defense",   higherBetter: false, format: (v) => v.toFixed(1) },
-  { key: "opp_efg_pct", label: "Opp eFG%",   section: "Defense",   higherBetter: false, format: (v) => `${(v * 100).toFixed(1)}%` },
+  { key: "adj_d",       label: "Adj D",      description: "Adjusted defensive efficiency: points allowed per 100 possessions after opponent adjustment. Lower is better.", section: "Defense",   higherBetter: false, format: (v) => v.toFixed(1) },
+  { key: "opp_efg_pct", label: "Opp eFG%",   description: "Opponent effective field goal percentage allowed. Lower means better shot suppression.", section: "Defense",   higherBetter: false, format: (v) => `${(v * 100).toFixed(1)}%` },
   // Possession
-  { key: "to_pct",      label: "TO%",        section: "Possession",higherBetter: false, format: (v) => `${(v * 100).toFixed(1)}%` },
-  { key: "opp_to_pct",  label: "Opp TO%",    section: "Possession",higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
-  { key: "orb_pct",     label: "ORB%",       section: "Possession",higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
-  { key: "drb_pct",     label: "DRB%",       section: "Possession",higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
+  { key: "to_pct",      label: "TO%",        description: "Turnover rate: how often a team gives the ball away per possession. Lower is better.", section: "Possession",higherBetter: false, format: (v) => `${(v * 100).toFixed(1)}%` },
+  { key: "opp_to_pct",  label: "Opp TO%",    description: "Opponent turnover rate forced by the defense. Higher means more takeaways.", section: "Possession",higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
+  { key: "orb_pct",     label: "ORB%",       description: "Offensive rebound rate: share of available offensive boards recovered. Higher creates extra possessions.", section: "Possession",higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
+  { key: "drb_pct",     label: "DRB%",       description: "Defensive rebound rate: share of available defensive boards recovered. Higher limits second chances.", section: "Possession",higherBetter: true,  format: (v) => `${(v * 100).toFixed(1)}%` },
   // Style
-  { key: "tempo",       label: "Tempo",      section: "Style",     higherBetter: null,  format: (v) => v.toFixed(1) },
+  { key: "tempo",       label: "Tempo",      description: "Adjusted possessions per 40 minutes. Higher means a faster pace.", section: "Style",     higherBetter: null,  format: (v) => v.toFixed(1) },
 ];
 
 // ─── Category row ─────────────────────────────────────────────────────────────
@@ -188,7 +190,13 @@ function MetricsTable({
                       {vA != null ? def.format(vA) : "—"}
                       {better === "a" && <span className="ml-1 text-2xs">★</span>}
                     </span>
-                    <span className="text-2xs text-slate-600 text-center">{def.label}</span>
+                    <span className="text-2xs text-slate-600 text-center">
+                      <Tooltip content={def.description} side="above">
+                        <span className="cursor-help border-b border-dotted border-slate-700/80">
+                          {def.label}
+                        </span>
+                      </Tooltip>
+                    </span>
                     <span className={cn("font-mono tabular-nums", better === "b" ? "text-violet-400 font-semibold" : "text-slate-400")}>
                       {vB != null ? def.format(vB) : "—"}
                       {better === "b" && <span className="ml-1 text-2xs">★</span>}
@@ -223,12 +231,24 @@ function DrawerSkeleton() {
 // ─── Main drawer ─────────────────────────────────────────────────────────────
 
 export interface MatchupDrawerProps {
-  game:    BracketGameOut | null;
-  profile: string;
-  onClose: () => void;
+  game:              BracketGameOut | null;
+  profile:           string;
+  currentWinnerId?:  number | null;
+  suggestedWinnerId?: number | null;
+  onPickWinner?:     (winnerId: number) => void;
+  onUseSuggestion?:  () => void;
+  onClose:           () => void;
 }
 
-export function MatchupDrawer({ game, profile, onClose }: MatchupDrawerProps) {
+export function MatchupDrawer({
+  game,
+  profile,
+  currentWinnerId = null,
+  suggestedWinnerId = null,
+  onPickWinner,
+  onUseSuggestion,
+  onClose,
+}: MatchupDrawerProps) {
   const [matchup,     setMatchup]     = useState<MatchupResponse | null>(null);
   const [teamADetail, setTeamADetail] = useState<TeamDetailOut | null>(null);
   const [teamBDetail, setTeamBDetail] = useState<TeamDetailOut | null>(null);
@@ -355,6 +375,84 @@ export function MatchupDrawer({ game, profile, onClose }: MatchupDrawerProps) {
                         <p className="text-sm font-bold font-mono text-slate-200">+{matchup.score_gap.toFixed(1)}</p>
                       </div>
                     </div>
+
+                    {teamA && teamB && (
+                      <div className="space-y-3 border-t border-amber-900/30 pt-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <p className="text-2xs text-amber-500/80 uppercase tracking-widest font-semibold">
+                              Make Your Pick
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              Choose the winner for your bracket. The model suggestion stays visible for reference.
+                            </p>
+                          </div>
+                          {currentWinnerId != null && (
+                            <span className="shrink-0 rounded-full border border-surface-border bg-surface-card px-2 py-1 text-2xs text-slate-400">
+                              Your winner: {currentWinnerId === teamA.team_id ? teamA.team_name : teamB.team_name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {[teamA, teamB].map((team) => {
+                            const isCurrent = currentWinnerId === team.team_id;
+                            const isSuggested = suggestedWinnerId === team.team_id;
+                            return (
+                              <button
+                                key={team.team_id}
+                                onClick={() => onPickWinner?.(team.team_id)}
+                                className={cn(
+                                  "rounded-lg border px-3 py-3 text-left transition-colors",
+                                  isCurrent
+                                    ? "border-brand/60 bg-brand/15 text-white shadow-[0_0_0_1px_rgba(59,130,246,0.18)]"
+                                    : "border-surface-border bg-surface-card text-slate-300 hover:border-brand/30 hover:bg-surface-overlay",
+                                )}
+                              >
+                                <div className="space-y-1.5">
+                                  <span className="block text-2xs uppercase tracking-wider text-slate-500">
+                                    {isCurrent ? "Selected Winner" : "Click To Pick"}
+                                  </span>
+                                  <span className="block text-sm font-semibold leading-snug break-words">
+                                    Pick #{team.seed} {team.team_name}
+                                  </span>
+                                  {isSuggested && (
+                                    <span className="inline-flex rounded-full border border-amber-800/40 bg-amber-950/20 px-1.5 py-0.5 text-2xs text-amber-400">
+                                      Suggested
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-2xs text-slate-500 mt-2">
+                                  {isCurrent
+                                    ? "This team currently advances in your bracket."
+                                    : "Advance this team and update the next round."}
+                                </p>
+                                {isSuggested && !isCurrent && (
+                                  <p className="text-2xs text-amber-400/80 mt-1">Model recommendation</p>
+                                )}
+                              </button>
+                            );
+                          })}
+                          <button
+                            onClick={() => onUseSuggestion?.()}
+                            className="rounded-lg border border-surface-border bg-surface-card px-3 py-3 text-left text-slate-300 hover:border-amber-700/30 hover:bg-surface-overlay transition-colors"
+                          >
+                            <span className="block text-2xs uppercase tracking-wider text-slate-500">
+                              Quick Reset
+                            </span>
+                            <span className="mt-1 block text-sm font-semibold">Use suggested winner</span>
+                            <p className="text-2xs text-slate-500 mt-2">
+                              Reset this matchup to {matchup.winner.team_name}.
+                            </p>
+                          </button>
+                        </div>
+                        {currentWinnerId != null && suggestedWinnerId != null && currentWinnerId !== suggestedWinnerId && (
+                          <p className="text-2xs text-slate-500">
+                            You overrode the model suggestion. Suggested winner remains{" "}
+                            <span className="text-amber-400">{matchup.winner.team_name}</span>.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* March score bar */}
                     <div className="space-y-1">
