@@ -3,8 +3,11 @@ scripts/seed_season.py
 
 Populates the database with the 2026 NCAA tournament field.
 Team identities, seeds, regions, and First Four slots reflect the
-Selection Sunday bracket released on March 15, 2026. Advanced metrics
-remain generated placeholders until a real stats feed is wired in.
+Selection Sunday bracket released on March 15, 2026.
+
+After seeding, run the import scripts to fill in real stats:
+    python -m scripts.fetch_ncaa_stats --season 2026
+    python -m scripts.fetch_stats      --season 2026
 
 Usage:
     cd backend
@@ -15,7 +18,6 @@ Usage:
 import sys
 import os
 
-# Allow running from /backend root
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.db.init_db import init_db
@@ -108,35 +110,6 @@ TOURNAMENT_TEAMS = [
     ("Howard",            "MEAC",          23, 10,16,  "Midwest"),
 ]
 
-# ---------------------------------------------------------------------------
-# Mock metrics — placeholder values loosely correlated with seed quality.
-# Higher seed = generally better adj_em. Replace with real data.
-# ---------------------------------------------------------------------------
-
-import random
-random.seed(42)
-
-def _metrics_for_seed(seed: int) -> dict:
-    """Generate plausible (but fake) metrics based on tournament seed."""
-    base_em = max(35.0 - seed * 2.0 + random.uniform(-1.5, 1.5), -5.0)
-    adj_o = 115.0 - seed * 0.8 + random.uniform(-2, 2)
-    adj_d = 90.0 + seed * 0.7 + random.uniform(-2, 2)
-    return {
-        "adj_em":      round(base_em, 1),
-        "adj_o":       round(adj_o, 1),
-        "adj_d":       round(adj_d, 1),
-        "efg_pct":     round(0.55 - seed * 0.005 + random.uniform(-0.02, 0.02), 3),
-        "opp_efg_pct": round(0.44 + seed * 0.004 + random.uniform(-0.02, 0.02), 3),
-        "to_pct":      round(0.17 + random.uniform(-0.02, 0.02), 3),
-        "opp_to_pct":  round(0.19 + random.uniform(-0.02, 0.02), 3),
-        "orb_pct":     round(0.30 + random.uniform(-0.03, 0.03), 3),
-        "drb_pct":     round(0.72 + random.uniform(-0.03, 0.03), 3),
-        "ft_rate":     round(0.32 + random.uniform(-0.04, 0.04), 3),
-        "tempo":       round(68.0 + random.uniform(-4, 4), 1),
-        "sos":         round(base_em * 0.3 + random.uniform(-1, 1), 2),
-    }
-
-
 def seed_season(db) -> None:
     existing = db.query(Team).filter_by(season=SEASON).all()
     if existing:
@@ -158,9 +131,8 @@ def seed_season(db) -> None:
         db.add(team)
         db.flush()  # get team.id before creating metrics
 
-        m = _metrics_for_seed(seed)
-        metrics = TeamMetrics(team_id=team.id, **m)
-        db.add(metrics)
+        # Metrics start null; filled in by fetch_ncaa_stats.py + fetch_stats.py
+        db.add(TeamMetrics(team_id=team.id))
 
     db.commit()
     print(f"Seeded {len(TOURNAMENT_TEAMS)} teams for season {SEASON}.")

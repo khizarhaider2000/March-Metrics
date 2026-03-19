@@ -38,6 +38,15 @@ class TeamInput:
     ft_rate: float | None = None
     tempo: float | None = None
     sos: float | None = None
+    # Extended metrics
+    opp_ft_rate:       float | None = None
+    ast_pct:           float | None = None
+    three_pt_rate:     float | None = None
+    opp_three_pt_rate: float | None = None
+    two_pt_pct:        float | None = None
+    opp_two_pt_pct:    float | None = None
+    steal_pct:         float | None = None
+    block_pct:         float | None = None
 
 
 @dataclass

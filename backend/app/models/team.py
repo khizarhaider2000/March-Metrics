@@ -24,7 +24,8 @@ class Team(Base):
     record_losses = Column(Integer, nullable=False, default=0)
 
     # Relationships
-    metrics = relationship("TeamMetrics", back_populates="team", uselist=False, cascade="all, delete-orphan")
+    metrics   = relationship("TeamMetrics",   back_populates="team", uselist=False, cascade="all, delete-orphan")
+    raw_stats = relationship("RawTeamStats",  back_populates="team", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Team {self.season} #{self.seed} {self.team_name}>"
@@ -66,6 +67,16 @@ class TeamMetrics(Base):
     ft_rate = Column(Float, nullable=True)
     tempo = Column(Float, nullable=True)
     sos = Column(Float, nullable=True)
+
+    # Extended metrics (computed from raw counting stats)
+    opp_ft_rate      = Column(Float, nullable=True)  # opp ftm per fga (lower = better defense)
+    ast_pct          = Column(Float, nullable=True)  # assists / fgm
+    three_pt_rate    = Column(Float, nullable=True)  # fg3a / fga
+    opp_three_pt_rate= Column(Float, nullable=True)  # opp_fg3a / opp_fga
+    two_pt_pct       = Column(Float, nullable=True)  # (fgm-fg3m) / (fga-fg3a)
+    opp_two_pt_pct   = Column(Float, nullable=True)  # opp 2-point shooting %
+    steal_pct        = Column(Float, nullable=True)  # stl / opp_fga
+    block_pct        = Column(Float, nullable=True)  # blk / opp 2PA
 
     # Relationships
     team = relationship("Team", back_populates="metrics")

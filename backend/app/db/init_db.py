@@ -22,23 +22,20 @@ def create_tables() -> None:
 
 
 def seed_weight_profiles(db: Session) -> None:
-    """Insert starter weight profiles; skip if they already exist."""
+    """Upsert starter weight profiles — always syncs weights from profiles.py."""
     from app.models.weight_profile import WeightProfile
 
     for profile_data in STARTER_PROFILES:
-        exists = db.query(WeightProfile).filter_by(name=profile_data["name"]).first()
-        if exists:
-            continue
-        profile = WeightProfile(
-            name=profile_data["name"],
-            description=profile_data["description"],
-            weights_json=json.dumps(profile_data["weights"]),
-            is_custom=profile_data["is_custom"],
-        )
-        db.add(profile)
+        wp = db.query(WeightProfile).filter_by(name=profile_data["name"]).first()
+        if wp is None:
+            wp = WeightProfile(name=profile_data["name"])
+            db.add(wp)
+        wp.description  = profile_data["description"]
+        wp.weights_json = json.dumps(profile_data["weights"])
+        wp.is_custom    = profile_data["is_custom"]
 
     db.commit()
-    logger.info("Starter weight profiles seeded.")
+    logger.info("Starter weight profiles synced.")
 
 
 def init_db() -> None:

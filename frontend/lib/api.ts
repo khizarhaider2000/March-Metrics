@@ -151,18 +151,27 @@ export interface BracketResponse {
 // ─── /teams/{team_id} ─────────────────────────────────────────────────────────
 
 export interface MetricsDict {
-  adj_em:      number | null;
-  adj_o:       number | null;
-  adj_d:       number | null;
-  efg_pct:     number | null;
-  opp_efg_pct: number | null;
-  to_pct:      number | null;
-  opp_to_pct:  number | null;
-  orb_pct:     number | null;
-  drb_pct:     number | null;
-  ft_rate:     number | null;
-  tempo:       number | null;
-  sos:         number | null;
+  adj_em:           number | null;
+  adj_o:            number | null;
+  adj_d:            number | null;
+  efg_pct:          number | null;
+  opp_efg_pct:      number | null;
+  to_pct:           number | null;
+  opp_to_pct:       number | null;
+  orb_pct:          number | null;
+  drb_pct:          number | null;
+  ft_rate:          number | null;
+  tempo:            number | null;
+  sos:              number | null;
+  // Extended metrics
+  opp_ft_rate:      number | null;
+  ast_pct:          number | null;
+  three_pt_rate:    number | null;
+  opp_three_pt_rate:number | null;
+  two_pt_pct:       number | null;
+  opp_two_pt_pct:   number | null;
+  steal_pct:        number | null;
+  block_pct:        number | null;
 }
 
 export interface TeamDetailOut extends TeamBase {

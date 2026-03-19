@@ -25,19 +25,28 @@ from pydantic import BaseModel, computed_field
 # ---------------------------------------------------------------------------
 
 class MetricsDict(BaseModel):
-    """All twelve advanced metrics. Any may be None if data is missing."""
-    adj_em:      Optional[float] = None
-    adj_o:       Optional[float] = None
-    adj_d:       Optional[float] = None
-    efg_pct:     Optional[float] = None
-    opp_efg_pct: Optional[float] = None
-    to_pct:      Optional[float] = None
-    opp_to_pct:  Optional[float] = None
-    orb_pct:     Optional[float] = None
-    drb_pct:     Optional[float] = None
-    ft_rate:     Optional[float] = None
-    tempo:       Optional[float] = None
-    sos:         Optional[float] = None
+    """All advanced metrics. Any may be None if data is missing."""
+    adj_em:           Optional[float] = None
+    adj_o:            Optional[float] = None
+    adj_d:            Optional[float] = None
+    efg_pct:          Optional[float] = None
+    opp_efg_pct:      Optional[float] = None
+    to_pct:           Optional[float] = None
+    opp_to_pct:       Optional[float] = None
+    orb_pct:          Optional[float] = None
+    drb_pct:          Optional[float] = None
+    ft_rate:          Optional[float] = None
+    tempo:            Optional[float] = None
+    sos:              Optional[float] = None
+    # Extended metrics
+    opp_ft_rate:      Optional[float] = None
+    ast_pct:          Optional[float] = None
+    three_pt_rate:    Optional[float] = None
+    opp_three_pt_rate:Optional[float] = None
+    two_pt_pct:       Optional[float] = None
+    opp_two_pt_pct:   Optional[float] = None
+    steal_pct:        Optional[float] = None
+    block_pct:        Optional[float] = None
 
 
 class TeamBase(BaseModel):

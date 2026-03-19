@@ -35,13 +35,13 @@ type MetricKey =
   // Efficiency
   | "adj_em" | "adj_o" | "adj_d"
   // Shooting
-  | "efg_pct" | "fg2_pct" | "fg3_pct" | "opp_fg3_pct" | "opp_efg_pct"
+  | "efg_pct" | "two_pt_pct" | "three_pt_rate" | "opp_efg_pct" | "opp_two_pt_pct" | "opp_three_pt_rate"
   // Possession
-  | "to_pct" | "ast_to" | "orb_pct" | "drb_pct"
-  // Pressure
-  | "ft_rate" | "opp_ft_rate"
+  | "to_pct" | "ast_pct" | "orb_pct" | "drb_pct"
+  // Defense
+  | "ft_rate" | "opp_ft_rate" | "steal_pct" | "block_pct"
   // Style
-  | "tempo" | "three_p_rate";
+  | "tempo" | "sos";
 
 interface ColDef {
   key:          MetricKey;
@@ -52,7 +52,7 @@ interface ColDef {
   format:       (v: number) => string;
 }
 
-type ColGroup = "Score" | "Efficiency" | "Shooting" | "Possession" | "Pressure" | "Style";
+type ColGroup = "Score" | "Efficiency" | "Shooting" | "Possession" | "Defense" | "Style";
 
 const METRIC_COLS: ColDef[] = [
   // ── Score ──────────────────────────────────────────────────────────────────
@@ -86,23 +86,28 @@ const METRIC_COLS: ColDef[] = [
     format: (v) => `${(v * 100).toFixed(1)}%`,
   },
   {
-    key: "fg2_pct", label: "FG2%", group: "Shooting", higherBetter: true,
+    key: "two_pt_pct", label: "2PT%", group: "Shooting", higherBetter: true,
     tooltip: "2-point field goal percentage. Measures efficiency inside the arc.",
     format: (v) => `${(v * 100).toFixed(1)}%`,
   },
   {
-    key: "fg3_pct", label: "FG3%", group: "Shooting", higherBetter: true,
-    tooltip: "3-point shooting percentage. Hot shooting from deep is a major March equalizer.",
-    format: (v) => `${(v * 100).toFixed(1)}%`,
-  },
-  {
-    key: "opp_fg3_pct", label: "OFG3%", group: "Shooting", higherBetter: false,
-    tooltip: "Opponent 3-point percentage allowed. Measures perimeter defense. Lower is better.",
+    key: "three_pt_rate", label: "3P Rate", group: "Shooting", higherBetter: null,
+    tooltip: "3-point attempt rate — share of shot attempts from 3-point range. High rate = boom-or-bust volatility.",
     format: (v) => `${(v * 100).toFixed(1)}%`,
   },
   {
     key: "opp_efg_pct", label: "OeFG%", group: "Shooting", higherBetter: false,
     tooltip: "Opponent effective FG% allowed — overall defensive shooting suppression. Lower is better.",
+    format: (v) => `${(v * 100).toFixed(1)}%`,
+  },
+  {
+    key: "opp_two_pt_pct", label: "O2PT%", group: "Shooting", higherBetter: false,
+    tooltip: "Opponent 2-point percentage allowed. Measures interior defensive efficiency. Lower is better.",
+    format: (v) => `${(v * 100).toFixed(1)}%`,
+  },
+  {
+    key: "opp_three_pt_rate", label: "O3P Rate", group: "Shooting", higherBetter: null,
+    tooltip: "Opponent 3-point attempt rate allowed — how often opponents try from deep. Context-dependent.",
     format: (v) => `${(v * 100).toFixed(1)}%`,
   },
 
@@ -113,9 +118,9 @@ const METRIC_COLS: ColDef[] = [
     format: (v) => `${(v * 100).toFixed(1)}%`,
   },
   {
-    key: "ast_to", label: "AST/TO", group: "Possession", higherBetter: true,
-    tooltip: "Assist-to-turnover ratio. Measures ball security and playmaking. Higher = more controlled offense.",
-    format: (v) => v.toFixed(2),
+    key: "ast_pct", label: "AST%", group: "Possession", higherBetter: true,
+    tooltip: "Assist percentage — share of field goals assisted. Higher = more ball movement and playmaking.",
+    format: (v) => `${(v * 100).toFixed(1)}%`,
   },
   {
     key: "orb_pct", label: "ORB%", group: "Possession", higherBetter: true,
@@ -128,16 +133,26 @@ const METRIC_COLS: ColDef[] = [
     format: (v) => `${(v * 100).toFixed(1)}%`,
   },
 
-  // ── Pressure ───────────────────────────────────────────────────────────────
+  // ── Defense ────────────────────────────────────────────────────────────────
   {
-    key: "ft_rate", label: "FT Rate", group: "Pressure", higherBetter: true,
+    key: "ft_rate", label: "FT Rate", group: "Defense", higherBetter: true,
     tooltip: "Free throw rate — FTAs per field goal attempt. Getting to the line often is a sign of an aggressive offense.",
     format: (v) => v.toFixed(2),
   },
   {
-    key: "opp_ft_rate", label: "OFT Rate", group: "Pressure", higherBetter: false,
+    key: "opp_ft_rate", label: "OFT Rate", group: "Defense", higherBetter: false,
     tooltip: "Opponent free throw rate — how often the defense sends opponents to the line. Lower = cleaner defense.",
     format: (v) => v.toFixed(2),
+  },
+  {
+    key: "steal_pct", label: "STL%", group: "Defense", higherBetter: true,
+    tooltip: "Steal percentage — steals per opponent field goal attempt. Measures defensive pressure and disruption.",
+    format: (v) => `${(v * 100).toFixed(2)}%`,
+  },
+  {
+    key: "block_pct", label: "BLK%", group: "Defense", higherBetter: true,
+    tooltip: "Block percentage — blocks per opponent 2-point attempt. Measures interior shot-blocking presence.",
+    format: (v) => `${(v * 100).toFixed(2)}%`,
   },
 
   // ── Style ──────────────────────────────────────────────────────────────────
@@ -147,9 +162,9 @@ const METRIC_COLS: ColDef[] = [
     format: (v) => v.toFixed(1),
   },
   {
-    key: "three_p_rate", label: "3P Rate", group: "Style", higherBetter: null,
-    tooltip: "3-point attempt rate — share of shot attempts from 3-point range. High rate = boom-or-bust volatility.",
-    format: (v) => `${(v * 100).toFixed(1)}%`,
+    key: "sos", label: "SOS", group: "Style", higherBetter: true,
+    tooltip: "Strength of schedule — average opponent quality. Higher SOS means a more battle-tested résumé.",
+    format: (v) => v.toFixed(2),
   },
 ];
 
@@ -161,9 +176,9 @@ const HEADER_GROUPS: { label: string; span: number; color?: string }[] = [
   { label: "",           span: 6  },                           // static info cols
   { label: "Score",      span: 1,  color: "text-brand-light" },
   { label: "Efficiency", span: 3,  color: "text-blue-400"    },
-  { label: "Shooting",   span: 5,  color: "text-amber-400"   },
+  { label: "Shooting",   span: 6,  color: "text-amber-400"   },
   { label: "Possession", span: 4,  color: "text-green-400"   },
-  { label: "Pressure",   span: 2,  color: "text-purple-400"  },
+  { label: "Defense",    span: 4,  color: "text-purple-400"  },
   { label: "Style",      span: 2,  color: "text-slate-400"   },
   { label: "",           span: 1  },                           // arrow col
 ];
@@ -644,7 +659,7 @@ function TeamRankingsContent() {
           <table
             ref={tableRef}
             className="w-full border-collapse"
-            style={{ minWidth: "1600px" }}
+            style={{ minWidth: "1900px" }}
           >
             <thead>
 

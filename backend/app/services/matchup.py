@@ -52,8 +52,8 @@ from app.services.scoring import score_single_matchup
 # Each entry: (internal_key, display_label, [metric_fields])
 CATEGORIES: list[tuple[str, str, list[str]]] = [
     ("efficiency",    "Overall Efficiency",  ["adj_em", "sos"]),
-    ("offense",       "Offensive Output",    ["adj_o", "efg_pct", "ft_rate"]),
-    ("defense",       "Defensive Strength",  ["adj_d", "opp_efg_pct"]),
+    ("offense",       "Offensive Output",    ["adj_o", "efg_pct", "ft_rate", "ast_pct", "two_pt_pct", "three_pt_rate"]),
+    ("defense",       "Defensive Strength",  ["adj_d", "opp_efg_pct", "opp_ft_rate", "opp_two_pt_pct", "steal_pct", "block_pct"]),
     ("ball_security", "Ball Security",        ["to_pct", "opp_to_pct"]),
     ("rebounding",    "Rebounding",           ["orb_pct", "drb_pct"]),
 ]
