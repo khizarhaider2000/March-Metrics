@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Trophy, Zap, RotateCcw, ChevronDown, Loader2, AlertTriangle,
+  Trophy, Zap, RotateCcw, ChevronDown, Loader2, AlertTriangle, Share2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { api, BracketResponse, BracketGameOut, MatchupResponse, ProfileOut } from "@/lib/api";
 import { ProfileWeightBars } from "@/components/ui/profile-weight-bars";
 import { BracketView } from "@/components/bracket/BracketView";
+import { BracketShareModal } from "@/components/bracket/BracketShareModal";
 import { MatchupDrawer } from "@/components/matchup/MatchupDrawer";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -488,6 +489,7 @@ function BracketBuilderContent() {
   const [pickedWinners, setPickedWinners] = useState<Record<number, number>>({});
   const [activeGameId, setActiveGameId] = useState<number | null>(null);
   const [profilesData, setProfilesData] = useState<ProfileOut[]>([]);
+  const [showShareModal, setShowShareModal] = useState(false);
   const matchupCacheRef = useRef<Map<string, MatchupResponse>>(new Map());
 
   useEffect(() => {
@@ -644,6 +646,13 @@ function BracketBuilderContent() {
               <RotateCcw className="w-3 h-3" /> Reset
             </button>
             <button
+              onClick={() => setShowShareModal(true)}
+              disabled={!bracket}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-card hover:bg-surface-overlay border border-surface-border text-slate-300 hover:text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-40"
+            >
+              <Share2 className="w-3 h-3" /> Share
+            </button>
+            <button
               onClick={autoFillBracket}
               disabled={loading}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-dark text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
@@ -764,6 +773,18 @@ function BracketBuilderContent() {
         }}
         onClose={() => setActiveGameId(null)}
       />
+
+      {/* ── Share modal ─────────────────────────────────────────────────────── */}
+      {showShareModal && bracket && (
+        <BracketShareModal
+          bracket={bracket}
+          champion={stats?.champion ?? null}
+          stats={stats}
+          profile={profile}
+          season={season}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
 
     </div>
   );

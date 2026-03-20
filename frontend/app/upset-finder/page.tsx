@@ -19,7 +19,7 @@ import { ProfileWeightBars } from "@/components/ui/profile-weight-bars";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const SEASONS  = [2026, 2025, 2024];
+const SEASONS  = [2026];
 const PROFILES = [
   { value: "balanced",      label: "Balanced",      icon: BarChart2,  color: "text-blue-400"   },
   { value: "offense-heavy", label: "Offense",        icon: Flame,      color: "text-orange-400" },

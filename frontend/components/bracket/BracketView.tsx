@@ -348,9 +348,10 @@ function CenterSection({
 export interface BracketViewProps {
   bracket:     BracketResponse;
   onGameClick: (game: BracketGameOut) => void;
+  noScroll?:   boolean;
 }
 
-export function BracketView({ bracket, onGameClick }: BracketViewProps) {
+export function BracketView({ bracket, onGameClick, noScroll }: BracketViewProps) {
   const topScrollRef = useRef<HTMLDivElement | null>(null);
   const bottomScrollRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -358,6 +359,7 @@ export function BracketView({ bracket, onGameClick }: BracketViewProps) {
   const [contentWidth, setContentWidth] = useState(0);
 
   useEffect(() => {
+    if (noScroll) return;
     const contentEl = contentRef.current;
     if (!contentEl) return;
 
@@ -368,9 +370,10 @@ export function BracketView({ bracket, onGameClick }: BracketViewProps) {
     observer.observe(contentEl);
 
     return () => observer.disconnect();
-  }, [bracket]);
+  }, [bracket, noScroll]);
 
   useEffect(() => {
+    if (noScroll) return;
     const topEl = topScrollRef.current;
     const bottomEl = bottomScrollRef.current;
     if (!topEl || !bottomEl) return;
@@ -400,7 +403,40 @@ export function BracketView({ bracket, onGameClick }: BracketViewProps) {
       topEl.removeEventListener("scroll", syncFromTop);
       bottomEl.removeEventListener("scroll", syncFromBottom);
     };
-  }, []);
+  }, [noScroll]);
+
+  const bracketContent = (
+    <div
+      ref={contentRef}
+      className="inline-flex items-start min-w-max"
+      style={{ gap: COL_GAP }}
+    >
+      {/* Left half: East (top) + West (bottom), rounds L→R */}
+      <HalfBracket
+        regions={LEFT_REGIONS}
+        bracket={bracket}
+        roundOrder={LEFT_ROUNDS}
+        connSide="right"
+        onGameClick={onGameClick}
+      />
+
+      {/* Center: Final Four + Championship */}
+      <CenterSection bracket={bracket} onGameClick={onGameClick} />
+
+      {/* Right half: South (top) + Midwest (bottom), rounds R→L (E8 leftmost) */}
+      <HalfBracket
+        regions={RIGHT_REGIONS}
+        bracket={bracket}
+        roundOrder={RIGHT_ROUNDS}
+        connSide="left"
+        onGameClick={onGameClick}
+      />
+    </div>
+  );
+
+  if (noScroll) {
+    return <div className="rounded-xl">{bracketContent}</div>;
+  }
 
   return (
     <div className="rounded-xl">
@@ -412,32 +448,7 @@ export function BracketView({ bracket, onGameClick }: BracketViewProps) {
         <div style={{ width: `${contentWidth}px`, height: "14px" }} />
       </div>
       <div ref={bottomScrollRef} className="overflow-x-auto pb-4" style={{ scrollbarWidth: "none" }}>
-        <div
-          ref={contentRef}
-          className="inline-flex items-start min-w-max"
-          style={{ gap: COL_GAP }}
-        >
-          {/* Left half: East (top) + West (bottom), rounds L→R */}
-          <HalfBracket
-            regions={LEFT_REGIONS}
-            bracket={bracket}
-            roundOrder={LEFT_ROUNDS}
-            connSide="right"
-            onGameClick={onGameClick}
-          />
-
-          {/* Center: Final Four + Championship */}
-          <CenterSection bracket={bracket} onGameClick={onGameClick} />
-
-          {/* Right half: South (top) + Midwest (bottom), rounds R→L (E8 leftmost) */}
-          <HalfBracket
-            regions={RIGHT_REGIONS}
-            bracket={bracket}
-            roundOrder={RIGHT_ROUNDS}
-            connSide="left"
-            onGameClick={onGameClick}
-          />
-        </div>
+        {bracketContent}
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ import { api, ProfileOut } from "@/lib/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const SEASONS = [2026, 2025, 2024];
+const SEASONS = [2026];
 
 const PROFILES = [
   {
