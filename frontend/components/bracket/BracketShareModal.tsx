@@ -4,12 +4,18 @@ import { useRef, useState, useCallback } from "react";
 import { X, Download, Loader2, Trophy, AlertTriangle } from "lucide-react";
 import type { BracketResponse, BracketGameOut } from "@/lib/api";
 import { BracketView } from "./BracketView";
-import { cn } from "@/lib/utils";
 
-// Full bracket content width (4 cols × 168px + 3 gaps × 12px) × 2 halves + center 196px + 2 gaps
+// Bracket natural dimensions (matches BracketView layout constants)
 const BRACKET_W = 1636;
-const CARD_PADDING = 24;
-const CARD_W = BRACKET_W + CARD_PADDING * 2;
+const APPROX_BRACKET_H = 1172;
+
+// Scale applied to the bracket section inside the share card
+const SCALE = 1.25;
+const SCALED_W = Math.round(BRACKET_W * SCALE);
+const SCALED_H = Math.round(APPROX_BRACKET_H * SCALE);
+
+const CARD_PADDING = 32;
+const CARD_W = SCALED_W + CARD_PADDING * 2;
 
 type BracketTeam = BracketGameOut["team_a"];
 
@@ -49,7 +55,7 @@ export function BracketShareModal({
       const dataUrl = await toPng(shareCardRef.current, {
         cacheBust: true,
         backgroundColor: "#0c1526",
-        pixelRatio: 2,
+        pixelRatio: 3,
       });
       const link = document.createElement("a");
       link.download = `march-madness-${season}.png`;
@@ -72,13 +78,16 @@ export function BracketShareModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="flex flex-col w-[min(97vw,1720px)] max-h-[95vh] bg-surface-card border border-surface-border rounded-2xl overflow-hidden shadow-2xl">
+      <div
+        className="flex flex-col max-h-[95vh] bg-surface-card border border-surface-border rounded-2xl overflow-hidden shadow-2xl"
+        style={{ width: `min(97vw, ${CARD_W + 40}px)` }}
+      >
 
         {/* Modal toolbar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-surface-border shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-white">Share Bracket</h2>
-            <p className="text-2xs text-slate-500 mt-0.5">Preview your bracket — save as a PNG to share</p>
+            <p className="text-2xs text-slate-500 mt-0.5">Preview your bracket — save as a high-res PNG to share</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -112,22 +121,26 @@ export function BracketShareModal({
 
             {/* Header bar */}
             <div
-              className="px-6 py-5 flex items-center justify-between"
-              style={{ background: "linear-gradient(135deg, #111827 0%, #0f1e33 100%)", borderBottom: "1px solid #1e3a5f" }}
+              className="flex items-center justify-between"
+              style={{
+                padding: "24px 32px",
+                background: "linear-gradient(135deg, #111827 0%, #0f1e33 100%)",
+                borderBottom: "1px solid #1e3a5f",
+              }}
             >
               <div>
-                <p className="text-2xs font-bold uppercase tracking-widest" style={{ color: "#3b82f6" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#3b82f6" }}>
                   March Madness Tool
                 </p>
-                <p className="text-2xl font-bold text-white mt-1">
+                <p style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", marginTop: 4 }}>
                   {season} NCAA Tournament Bracket
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-2xs uppercase tracking-widest font-semibold" style={{ color: "#64748b" }}>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#64748b" }}>
                   Analysis Profile
                 </p>
-                <p className="text-base font-bold mt-1" style={{ color: "#3b82f6" }}>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "#3b82f6", marginTop: 4 }}>
                   {profileLabel}
                 </p>
               </div>
@@ -135,74 +148,78 @@ export function BracketShareModal({
 
             {/* Champion + stats row */}
             <div
-              className="px-6 py-4 flex items-center gap-8"
-              style={{ background: "rgba(120,53,15,0.08)", borderBottom: "1px solid #1e293b" }}
+              style={{
+                padding: "20px 32px",
+                display: "flex",
+                alignItems: "center",
+                gap: 32,
+                background: "rgba(120,53,15,0.08)",
+                borderBottom: "1px solid #1e293b",
+              }}
             >
               {/* Champion */}
-              <div className="flex items-center gap-3 shrink-0">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "rgba(120,53,15,0.40)", border: "1px solid rgba(146,64,14,0.40)" }}
-                >
-                  <Trophy className="w-6 h-6" style={{ color: "#fbbf24" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 14,
+                  background: "rgba(120,53,15,0.40)",
+                  border: "1px solid rgba(146,64,14,0.40)",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <Trophy style={{ width: 24, height: 24, color: "#fbbf24" }} />
                 </div>
                 <div>
-                  <p className="text-2xs uppercase tracking-widest font-bold" style={{ color: "rgba(245,158,11,0.8)" }}>
-                    {champion ? "Champion" : "Champion"}
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,158,11,0.85)" }}>
+                    Champion
                   </p>
                   {champion ? (
                     <>
-                      <p className="text-lg font-bold text-white mt-0.5">{champion.team_name}</p>
-                      <p className="text-xs" style={{ color: "#94a3b8" }}>
-                        #{champion.seed} · {champion.region} Region
-                      </p>
+                      <p style={{ fontSize: 20, fontWeight: 800, color: "#ffffff", marginTop: 2 }}>{champion.team_name}</p>
+                      <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 2 }}>#{champion.seed} · {champion.region} Region</p>
                     </>
                   ) : (
-                    <p className="text-sm italic mt-0.5" style={{ color: "#475569" }}>Not yet crowned</p>
+                    <p style={{ fontSize: 14, color: "#475569", fontStyle: "italic", marginTop: 2 }}>Not yet crowned</p>
                   )}
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="h-14 w-px shrink-0" style={{ background: "#1e293b" }} />
+              <div style={{ width: 1, height: 56, background: "#1e293b", flexShrink: 0 }} />
 
               {/* Stats */}
               {stats && (
-                <div className="flex items-center gap-10">
+                <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
                   <div>
-                    <p className="text-2xl font-bold font-mono text-white">
-                      {stats.pickedGames}
-                      <span className="text-sm" style={{ color: "#334155" }}>/{stats.totalGames}</span>
+                    <p style={{ fontSize: 28, fontWeight: 800, fontFamily: "monospace", color: "#ffffff" }}>
+                      {stats.pickedGames}<span style={{ fontSize: 14, color: "#334155" }}>/{stats.totalGames}</span>
                     </p>
-                    <p className="text-xs" style={{ color: "#64748b" }}>games picked</p>
+                    <p style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>games picked</p>
                   </div>
                   <div>
-                    <p
-                      className="text-2xl font-bold font-mono"
-                      style={{ color: stats.upsets > 0 ? "#fb923c" : "#e2e8f0" }}
-                    >
+                    <p style={{ fontSize: 28, fontWeight: 800, fontFamily: "monospace", color: stats.upsets > 0 ? "#fb923c" : "#e2e8f0" }}>
                       {stats.upsets}
                     </p>
-                    <p className="text-xs" style={{ color: "#64748b" }}>upsets picked</p>
+                    <p style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>upsets picked</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold font-mono text-white">{stats.avgGap.toFixed(1)}</p>
-                    <p className="text-xs" style={{ color: "#64748b" }}>avg margin</p>
+                    <p style={{ fontSize: 28, fontWeight: 800, fontFamily: "monospace", color: "#ffffff" }}>
+                      {stats.avgGap.toFixed(1)}
+                    </p>
+                    <p style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>avg margin</p>
                   </div>
 
                   {stats.biggestUpset && (
                     <>
-                      <div className="h-14 w-px shrink-0" style={{ background: "#1e293b" }} />
-                      <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#fb923c" }} />
+                      <div style={{ width: 1, height: 56, background: "#1e293b", flexShrink: 0 }} />
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <AlertTriangle style={{ width: 16, height: 16, marginTop: 3, flexShrink: 0, color: "#fb923c" }} />
                         <div>
-                          <p className="text-2xs uppercase tracking-wider font-bold" style={{ color: "#fb923c" }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#fb923c" }}>
                             Biggest Upset
                           </p>
-                          <p className="text-sm font-semibold text-white mt-0.5">
+                          <p style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginTop: 3 }}>
                             #{stats.biggestUpset.winner?.seed} {stats.biggestUpset.winner?.team_name}
                           </p>
-                          <p className="text-xs" style={{ color: "#64748b" }}>
+                          <p style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
                             over #{stats.biggestUpset.loser?.seed} {stats.biggestUpset.loser?.team_name} · {stats.biggestUpset.round_name}
                           </p>
                         </div>
@@ -213,24 +230,34 @@ export function BracketShareModal({
               )}
             </div>
 
-            {/* Full bracket — no scroll, renders at native size */}
+            {/* Full bracket — scaled up for clarity */}
             <div style={{ padding: CARD_PADDING }}>
-              <BracketView
-                bracket={bracket}
-                onGameClick={() => {}}
-                noScroll
-              />
+              {/* Container sized to the scaled dimensions so the card wraps correctly */}
+              <div style={{ width: SCALED_W, height: SCALED_H, overflow: "hidden" }}>
+                {/* Apply the scale transform — transform-origin: top left so it grows right/down */}
+                <div style={{ transform: `scale(${SCALE})`, transformOrigin: "top left", width: BRACKET_W }}>
+                  <BracketView
+                    bracket={bracket}
+                    onGameClick={() => {}}
+                    noScroll
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Footer */}
             <div
-              className="px-6 py-3 flex items-center justify-between"
-              style={{ background: "#080f1a", borderTop: "1px solid #0f1f35" }}
+              style={{
+                padding: "10px 32px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                background: "#080f1a",
+                borderTop: "1px solid #0f1f35",
+              }}
             >
-              <p className="text-2xs" style={{ color: "#334155" }}>
-                Generated with March Madness Tool
-              </p>
-              <p className="text-2xs font-mono" style={{ color: "#1e3a5f" }}>
+              <p style={{ fontSize: 11, color: "#334155" }}>Generated with March Madness Tool</p>
+              <p style={{ fontSize: 11, fontFamily: "monospace", color: "#1e3a5f" }}>
                 {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </p>
             </div>
