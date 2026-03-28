@@ -47,7 +47,9 @@ from app.schemas.scoring import RankingsResult, ScoredTeam, TeamInput
 from app.services.profiles import (
     METRIC_DIRECTION,
     METRIC_FIELDS,
+    SEED_UPSET_COMPRESSION,
     WeightDict,
+    get_effective_weights,
     get_profile_weights,
 )
 
@@ -261,22 +263,116 @@ def compute_march_scores(
     return RankingsResult(profile_name=profile_name, season=season, teams=scored)
 
 
+def _matchup_delta(team_a: TeamInput, team_b: TeamInput) -> float:
+    """
+    Compute a small score adjustment for team_a based on how their offense
+    attacks team_b's defense — and vice versa.
+
+    Captures the "does Team A's strength attack Team B's weakness?" question
+    that raw march scores miss (two teams can have similar scores but very
+    different matchup dynamics).
+
+    Returns a value in approximately [-5, +5] to add to team_a's march score.
+    Negative means team_b benefits from the matchup quality delta.
+
+    Two components:
+      1. adj_o vs adj_d: expected net scoring differential
+      2. eFG% vs opp eFG%: shooting efficiency vs shot suppression
+    """
+    components: list[float] = []
+
+    # Component 1: offensive efficiency vs opponent's defense
+    if None not in (team_a.adj_o, team_b.adj_d, team_b.adj_o, team_a.adj_d):
+        net_a = team_a.adj_o - team_b.adj_d   # how much A scores vs B's defense
+        net_b = team_b.adj_o - team_a.adj_d   # how much B scores vs A's defense
+        # adj values ~85-135; net range ~-45 to +45; difference ~-90 to +90
+        components.append((net_a - net_b) / 70.0 * 3.5)  # → [-3.5, +3.5]
+
+    # Component 2: shooting efficiency vs shot suppression
+    if None not in (team_a.efg_pct, team_b.opp_efg_pct, team_b.efg_pct, team_a.opp_efg_pct):
+        shoot_a = team_a.efg_pct - team_b.opp_efg_pct   # A shoots well vs B's D?
+        shoot_b = team_b.efg_pct - team_a.opp_efg_pct   # B shoots well vs A's D?
+        # Each component ~-0.25 to +0.25; difference ~-0.50 to +0.50
+        components.append((shoot_a - shoot_b) / 0.45 * 2.5)  # → [-2.5, +2.5]
+
+    if not components:
+        return 0.0
+
+    raw = sum(components) / len(components)
+    return max(-5.0, min(5.0, raw))
+
+
+def _apply_seed_compression(
+    scored_a: ScoredTeam,
+    scored_b: ScoredTeam,
+    seed_a: int | None,
+    seed_b: int | None,
+) -> tuple[ScoredTeam, ScoredTeam]:
+    """
+    Compress the march score gap toward 50/50 for historically upset-prone
+    R64 seed matchups (e.g. 12v5, 11v6, 9v8).
+
+    Moves both scores toward their midpoint by the compression factor —
+    a factor of 0.70 means the gap shrinks to 70% of its original size.
+    The winner does not change unless the delta pushed it over the edge.
+    """
+    if seed_a is None or seed_b is None:
+        return scored_a, scored_b
+
+    fav_seed = min(seed_a, seed_b)
+    dog_seed = max(seed_a, seed_b)
+
+    compression = SEED_UPSET_COMPRESSION.get((fav_seed, dog_seed))
+    if compression is None or compression >= 1.0:
+        return scored_a, scored_b
+
+    mid = (scored_a.march_score + scored_b.march_score) / 2.0
+    scored_a.march_score = round(mid + (scored_a.march_score - mid) * compression, 4)
+    scored_b.march_score = round(mid + (scored_b.march_score - mid) * compression, 4)
+    return scored_a, scored_b
+
+
 def score_single_matchup(
     team_a: TeamInput,
     team_b: TeamInput,
     profile: Union[str, WeightDict],
+    round_num: int | None = None,
 ) -> tuple[ScoredTeam, ScoredTeam]:
     """
     Score two teams head-to-head using only each other as the normalization pool.
 
-    Useful for the Matchup Analyzer where you want relative strength between
-    exactly two teams rather than their rank in the full 64-team field.
+    When *round_num* is provided (bracket context), three additional adjustments
+    are applied on top of the base percentile scoring:
 
-    Returns (scored_team_a, scored_team_b) — the winner has the higher march_score.
+      1. Round-specific weight multipliers — boosts chaos metrics in R64,
+         efficiency/defense in later rounds, defense-heavy in Championship.
+      2. Matchup delta — small bonus for the team whose offense better
+         attacks the opponent's defensive weakness (adj_o vs adj_d, eFG% vs
+         opponent eFG% allowed).
+      3. Seed compression — for R64 only, compresses the score gap toward
+         50/50 for historically upset-prone matchups (9v8, 12v5, 11v6, etc.).
+
+    When round_num=None (Matchup Analyzer), returns plain head-to-head scores
+    with no round context — existing behavior is fully preserved.
     """
-    result = compute_march_scores([team_a, team_b], profile)
-    # result.teams is sorted descending, so index by team_id
+    # Resolve round-aware weights (no-op when round_num is None or profile is a dict)
+    if round_num is not None and isinstance(profile, str):
+        effective: Union[str, WeightDict] = get_effective_weights(profile, round_num)
+    else:
+        effective = profile
+
+    result = compute_march_scores([team_a, team_b], effective)
     a = result.get_team(team_a.team_id)
     b = result.get_team(team_b.team_id)
-    assert a is not None and b is not None  # both were in the input
+    assert a is not None and b is not None
+
+    # Matchup delta: adjust scores based on offense-vs-defense quality
+    delta = _matchup_delta(team_a, team_b)
+    a.march_score = round(a.march_score + delta, 4)
+    b.march_score = round(b.march_score - delta, 4)
+
+    # Seed compression: R64 only, for known upset-prone matchups
+    if round_num == 1:
+        a, b = _apply_seed_compression(a, b, team_a.seed, team_b.seed)
+
     return a, b

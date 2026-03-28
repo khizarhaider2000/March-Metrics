@@ -1,0 +1,76 @@
+{
+  "games": [
+    {"round_num": 0, "round_name": "First Four", "region": "Midwest", "slot": 1, "winner_team_name": "Howard"},
+    {"round_num": 0, "round_name": "First Four", "region": "West", "slot": 5, "winner_team_name": "Texas"},
+    {"round_num": 0, "round_name": "First Four", "region": "South", "slot": 1, "winner_team_name": "Prairie View A&M"},
+    {"round_num": 0, "round_name": "First Four", "region": "Midwest", "slot": 5, "winner_team_name": "Miami (Ohio)"},
+
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 1, "winner_team_name": "Duke"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 2, "winner_team_name": "TCU"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 3, "winner_team_name": "St. John's"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 4, "winner_team_name": "Kansas"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 5, "winner_team_name": "Louisville"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 6, "winner_team_name": "Michigan State"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 7, "winner_team_name": "UCLA"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 8, "winner_team_name": "UConn"},
+
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 1, "winner_team_name": "Arizona"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 2, "winner_team_name": "Utah State"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 3, "winner_team_name": "High Point"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 4, "winner_team_name": "Arkansas"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 5, "winner_team_name": "Texas"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 6, "winner_team_name": "Gonzaga"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 7, "winner_team_name": "Miami (FL)"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "West", "slot": 8, "winner_team_name": "Purdue"},
+
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 1, "winner_team_name": "Florida"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 2, "winner_team_name": "Iowa"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 3, "winner_team_name": "Vanderbilt"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 4, "winner_team_name": "Nebraska"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 5, "winner_team_name": "VCU"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 6, "winner_team_name": "Illinois"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 7, "winner_team_name": "Texas A&M"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "South", "slot": 8, "winner_team_name": "Houston"},
+
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 1, "winner_team_name": "Michigan"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 2, "winner_team_name": "Saint Louis"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 3, "winner_team_name": "Texas Tech"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 4, "winner_team_name": "Alabama"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 5, "winner_team_name": "Tennessee"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 6, "winner_team_name": "Virginia"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 7, "winner_team_name": "Kentucky"},
+    {"round_num": 1, "round_name": "Round of 64", "region": "Midwest", "slot": 8, "winner_team_name": "Iowa State"},
+
+    {"round_num": 2, "round_name": "Round of 32", "region": "East", "slot": 1, "winner_team_name": "Duke"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "East", "slot": 2, "winner_team_name": "St. John's"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "East", "slot": 3, "winner_team_name": "Michigan State"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "East", "slot": 4, "winner_team_name": "UConn"},
+
+    {"round_num": 2, "round_name": "Round of 32", "region": "West", "slot": 1, "winner_team_name": "Arizona"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "West", "slot": 2, "winner_team_name": "Arkansas"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "West", "slot": 3, "winner_team_name": "Texas"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "West", "slot": 4, "winner_team_name": "Purdue"},
+
+    {"round_num": 2, "round_name": "Round of 32", "region": "South", "slot": 1, "winner_team_name": "Iowa"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "South", "slot": 2, "winner_team_name": "Nebraska"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "South", "slot": 3, "winner_team_name": "Illinois"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "South", "slot": 4, "winner_team_name": "Houston"},
+
+    {"round_num": 2, "round_name": "Round of 32", "region": "Midwest", "slot": 1, "winner_team_name": "Michigan"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "Midwest", "slot": 2, "winner_team_name": "Alabama"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "Midwest", "slot": 3, "winner_team_name": "Tennessee"},
+    {"round_num": 2, "round_name": "Round of 32", "region": "Midwest", "slot": 4, "winner_team_name": "Iowa State"},
+
+    {"round_num": 3, "round_name": "Sweet 16", "region": "East", "slot": 1, "winner_team_name": "Duke"},
+    {"round_num": 3, "round_name": "Sweet 16", "region": "East", "slot": 2, "winner_team_name": "UConn"},
+
+    {"round_num": 3, "round_name": "Sweet 16", "region": "West", "slot": 1, "winner_team_name": "Arizona"},
+    {"round_num": 3, "round_name": "Sweet 16", "region": "West", "slot": 2, "winner_team_name": "Purdue"},
+
+    {"round_num": 3, "round_name": "Sweet 16", "region": "South", "slot": 1, "winner_team_name": "Iowa"},
+    {"round_num": 3, "round_name": "Sweet 16", "region": "South", "slot": 2, "winner_team_name": "Illinois"},
+
+    {"round_num": 3, "round_name": "Sweet 16", "region": "Midwest", "slot": 1, "winner_team_name": "Michigan"},
+    {"round_num": 3, "round_name": "Sweet 16", "region": "Midwest", "slot": 2, "winner_team_name": "Tennessee"}
+  ]
+}

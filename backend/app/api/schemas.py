@@ -202,3 +202,29 @@ class BracketResponse(BaseModel):
     bracket_size:  int
     champion:      Optional[BracketTeamOut] = None
     rounds:        list[BracketRoundOut]
+
+
+# ---------------------------------------------------------------------------
+# GET /bracket/accuracy
+# ---------------------------------------------------------------------------
+
+class AccuracyRoundOut(BaseModel):
+    round_num:       int
+    round_name:      str
+    correct_picks:   int
+    evaluated_picks: int
+    accuracy_pct:    float
+
+
+class AccuracyProfileOut(BaseModel):
+    profile:         str
+    correct_picks:   int
+    evaluated_picks: int
+    accuracy_pct:    float
+    rounds:          list[AccuracyRoundOut]
+
+
+class AccuracyResponse(BaseModel):
+    season:          int
+    evaluated_games: int
+    profiles:        list[AccuracyProfileOut]

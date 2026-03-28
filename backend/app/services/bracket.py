@@ -142,7 +142,7 @@ def _play_game(
     The returned TeamInput for the winner is the *original* TeamInput object
     (not a ScoredTeam) so it retains full metrics for subsequent rounds.
     """
-    result = analyze_matchup(team_a, team_b, profile)
+    result = analyze_matchup(team_a, team_b, profile, round_num=round_num)
 
     # Identify which original input is the winner
     winner_input = team_a if result.winner.team_id == team_a.team_id else team_b

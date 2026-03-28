@@ -290,6 +290,7 @@ def analyze_matchup(
     team_a: TeamInput,
     team_b: TeamInput,
     profile: Union[str, WeightDict],
+    round_num: int | None = None,
 ) -> MatchupResult:
     """
     Compare *team_a* and *team_b* head-to-head using *profile*.
@@ -300,6 +301,10 @@ def analyze_matchup(
         ``TeamInput`` objects with metric fields populated.
     profile
         Built-in profile name (str) or a custom ``WeightDict``.
+    round_num
+        Tournament round (0=First Four … 6=Championship).  When supplied,
+        activates round-specific weight adjustments, matchup delta scoring,
+        and seed compression.  Pass None for the standalone Matchup Analyzer.
 
     Returns
     -------
@@ -310,7 +315,7 @@ def analyze_matchup(
     profile_name = profile if isinstance(profile, str) else "custom"
 
     # ── Step 1: Head-to-head scoring ───────────────────────────────────────
-    scored_a, scored_b = score_single_matchup(team_a, team_b, profile)
+    scored_a, scored_b = score_single_matchup(team_a, team_b, profile, round_num)
 
     # Determine overall winner (higher march_score wins; team_a wins a tie)
     if scored_a.march_score >= scored_b.march_score:

@@ -148,6 +148,30 @@ export interface BracketResponse {
   rounds: BracketRoundOut[];
 }
 
+// ─── /bracket/accuracy ────────────────────────────────────────────────────────
+
+export interface AccuracyRoundOut {
+  round_num: number;
+  round_name: string;
+  correct_picks: number;
+  evaluated_picks: number;
+  accuracy_pct: number;
+}
+
+export interface AccuracyProfileOut {
+  profile: string;
+  correct_picks: number;
+  evaluated_picks: number;
+  accuracy_pct: number;
+  rounds: AccuracyRoundOut[];
+}
+
+export interface AccuracyResponse {
+  season: number;
+  evaluated_games: number;
+  profiles: AccuracyProfileOut[];
+}
+
 // ─── /teams/{team_id} ─────────────────────────────────────────────────────────
 
 export interface MetricsDict {
@@ -203,4 +227,7 @@ export const api = {
 
   bracket: (season: number, profile: string) =>
     get<BracketResponse>("/bracket", { season: String(season), profile }),
+
+  bracketAccuracy: (season: number) =>
+    get<AccuracyResponse>("/bracket/accuracy", { season: String(season) }),
 };

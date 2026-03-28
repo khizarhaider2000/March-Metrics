@@ -5,6 +5,7 @@ from app.limiter import limiter
 
 from app.api.dependencies import fetch_teams_for_season, orm_team_to_input
 from app.api.schemas import (
+    AccuracyResponse,
     BracketGameOut,
     BracketResponse,
     BracketRoundOut,
@@ -12,6 +13,7 @@ from app.api.schemas import (
 )
 from app.db.session import get_db
 from app.schemas.bracket import BracketGame, BracketResult, TeamInfo
+from app.services.accuracy import compute_bracket_accuracy
 from app.services.bracket import build_bracket
 
 router = APIRouter()
@@ -118,3 +120,40 @@ def get_bracket(
         raise HTTPException(status_code=422, detail=str(e))
 
     return _bracket_result_to_response(result)
+
+
+@limiter.limit("10/minute")
+@router.get(
+    "/bracket/accuracy",
+    response_model=AccuracyResponse,
+    summary="Compare model predictions to actual tournament results",
+    description=(
+        "Generates brackets for every built-in profile and compares each predicted "
+        "winner against the actual results stored in "
+        "backend/app/data/actual_brackets/{season}.json. "
+        "Only completed games (those with a recorded winner) are evaluated. "
+        "Returns per-profile accuracy with an optional round-by-round breakdown."
+    ),
+)
+def get_bracket_accuracy(
+    request: Request,
+    season: int = Query(..., description="Tournament season year, e.g. 2026"),
+    db: Session = Depends(get_db),
+) -> AccuracyResponse:
+    rows = fetch_teams_for_season(db, season)
+    if not rows:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No teams found for season {season}.",
+        )
+
+    team_inputs = [orm_team_to_input(t) for t in rows]
+
+    try:
+        data = compute_bracket_accuracy(team_inputs, season)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return AccuracyResponse(**data)

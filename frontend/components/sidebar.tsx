@@ -7,6 +7,7 @@ import {
   BarChart2,
   Swords,
   Trophy,
+  FlaskConical,
   Settings2,
   ChevronRight,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const primaryNav = [
   { label: "Team Rankings",    href: "/team-rankings",     icon: BarChart2       },
   { label: "Matchup Analyzer", href: "/matchup-analyzer",  icon: Swords          },
   { label: "Bracket Builder",  href: "/bracket-builder",   icon: Trophy          },
+  { label: "Model Accuracy",   href: "/model-accuracy",    icon: FlaskConical    },
 ];
 
 export function Sidebar() {
