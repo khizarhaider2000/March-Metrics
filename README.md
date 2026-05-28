@@ -1,6 +1,7 @@
 # March Metrics — NCAA Bracket Builder
 
 A full-stack sports analytics app for building NCAA tournament brackets with advanced metrics.
+[Try It Yourself](https://march-metrics-zeta.vercel.app/)
 
 ## Architecture
 
