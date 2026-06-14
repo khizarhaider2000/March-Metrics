@@ -1,9 +1,9 @@
 {
   "games": [
     {"round_num": 0, "round_name": "First Four", "region": "Midwest", "slot": 1, "winner_team_name": "Howard"},
-    {"round_num": 0, "round_name": "First Four", "region": "West", "slot": 5, "winner_team_name": "Texas"},
-    {"round_num": 0, "round_name": "First Four", "region": "South", "slot": 1, "winner_team_name": "Prairie View A&M"},
-    {"round_num": 0, "round_name": "First Four", "region": "Midwest", "slot": 5, "winner_team_name": "Miami (Ohio)"},
+    {"round_num": 0, "round_name": "First Four", "region": "West", "slot": 2, "winner_team_name": "Texas"},
+    {"round_num": 0, "round_name": "First Four", "region": "South", "slot": 3, "winner_team_name": "Prairie View A&M"},
+    {"round_num": 0, "round_name": "First Four", "region": "Midwest", "slot": 4, "winner_team_name": "Miami (OH)"},
 
     {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 1, "winner_team_name": "Duke"},
     {"round_num": 1, "round_name": "Round of 64", "region": "East", "slot": 2, "winner_team_name": "TCU"},
@@ -71,6 +71,16 @@
     {"round_num": 3, "round_name": "Sweet 16", "region": "South", "slot": 2, "winner_team_name": "Illinois"},
 
     {"round_num": 3, "round_name": "Sweet 16", "region": "Midwest", "slot": 1, "winner_team_name": "Michigan"},
-    {"round_num": 3, "round_name": "Sweet 16", "region": "Midwest", "slot": 2, "winner_team_name": "Tennessee"}
+    {"round_num": 3, "round_name": "Sweet 16", "region": "Midwest", "slot": 2, "winner_team_name": "Tennessee"},
+
+    {"round_num": 4, "round_name": "Elite Eight", "region": "East", "slot": 1, "winner_team_name": "UConn"},
+    {"round_num": 4, "round_name": "Elite Eight", "region": "West", "slot": 1, "winner_team_name": "Arizona"},
+    {"round_num": 4, "round_name": "Elite Eight", "region": "South", "slot": 1, "winner_team_name": "Illinois"},
+    {"round_num": 4, "round_name": "Elite Eight", "region": "Midwest", "slot": 1, "winner_team_name": "Michigan"},
+
+    {"round_num": 5, "round_name": "Final Four", "region": null, "slot": 1, "winner_team_name": "UConn"},
+    {"round_num": 5, "round_name": "Final Four", "region": null, "slot": 2, "winner_team_name": "Michigan"},
+
+    {"round_num": 6, "round_name": "Championship", "region": null, "slot": 1, "winner_team_name": "Michigan"}
   ]
 }

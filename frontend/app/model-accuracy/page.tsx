@@ -19,6 +19,8 @@ const PROFILE_LABELS: Record<string, string> = {
   "upset-hunter":  "Upset Hunter",
 };
 
+const FULL_TOURNAMENT_GAMES = 67;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function accuracyVariant(pct: number): "green" | "amber" | "red" | "slate" {
@@ -153,7 +155,8 @@ function ModelAccuracyContent() {
       .finally(() => setLoading(false));
   }, [season]);
 
-  const partial = data && data.evaluated_games < 63;
+  const partial = data && data.evaluated_games > 0 && data.evaluated_games < FULL_TOURNAMENT_GAMES;
+  const complete = data && data.evaluated_games >= FULL_TOURNAMENT_GAMES;
 
   return (
     <div className="space-y-6">
@@ -173,7 +176,7 @@ function ModelAccuracyContent() {
         }
       />
 
-      {/* Partial results notice */}
+      {/* Tournament coverage notice */}
       {partial && (
         <div className="rounded-lg border border-amber-900/40 bg-amber-950/10 px-4 py-3 flex items-center gap-3">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
@@ -185,6 +188,17 @@ function ModelAccuracyContent() {
             <code className="text-slate-300 bg-slate-800 px-1 rounded text-2xs">
               backend/app/data/actual_brackets/{season}.json
             </code>
+          </p>
+        </div>
+      )}
+
+      {complete && (
+        <div className="rounded-lg border border-green-900/40 bg-green-950/10 px-4 py-3 flex items-center gap-3">
+          <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+          <p className="text-xs text-slate-400">
+            <span className="text-green-300 font-semibold">Tournament complete — </span>
+            accuracy is based on all{" "}
+            <span className="text-white font-mono">{data.evaluated_games}</span> completed tournament games.
           </p>
         </div>
       )}
